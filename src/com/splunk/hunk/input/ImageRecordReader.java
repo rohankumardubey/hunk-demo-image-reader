@@ -90,12 +90,20 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 			tarIn.skip(entry.getSize());
 	}
 
+	private boolean isFile(TarArchiveEntry entry) {
+		return entry.isFile() && !entry.isLink();
+	}
+
 	private void putImageInQueue(TarArchiveEntry entry) throws IOException {
 		BufferedImage image = readImage(entry);
 		if (image != null)
 			eventQueue.offer(createImageEvent(entry, image));
 		else
 			logger.debug("Could not read image: " + entry.getName());
+	}
+
+	private BufferedImage readImage(TarArchiveEntry entry) throws IOException {
+		return ImageIO.read(new BoundedInputStream(tarIn, entry.getSize()));
 	}
 
 	private Map<String, String> createImageEvent(TarArchiveEntry entry,
@@ -106,24 +114,12 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 		return imageData;
 	}
 
-	private boolean isFile(TarArchiveEntry entry) {
-		return entry.isFile() && !entry.isLink();
-	}
-
-	private BufferedImage readImage(TarArchiveEntry entry) throws IOException {
-		return ImageIO.read(new BoundedInputStream(tarIn, entry.getSize()));
-	}
-
-	private void setNextValue(Map<String, String> event) {
+	private void setNextValue(Map<String, String> event) throws IOException {
 		value.set(eventAsJson(event));
 	}
 
-	private String eventAsJson(Map<String, String> event) {
-		try {
-			return new ObjectMapper().writeValueAsString(event);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	private String eventAsJson(Map<String, String> event) throws IOException {
+		return new ObjectMapper().writeValueAsString(event);
 	}
 
 	@Override
