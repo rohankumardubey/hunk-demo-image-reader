@@ -20,9 +20,9 @@ com.splunk.hunk.input.SequenceImageRecordReader.class -> Hadoop MapFile
 The Hadoop mapfile can be created with com.splunk.hunk.output.StoresImages.class.
 
 ## Hunk configuration
-Create a jar file containing everything under src.
+Create a jar file with ./create-jar.sh
 In indexes.conf:
-vix.splunk.jars = <path-to-created-jar>
+vix.splunk.jars = <path-to-depo>/hunk-image-reader.jar
 vix.splunk.search.recordreader = com.splunk.hunk.input.ImageRecordReader,com.splunk.hunk.input.SequenceImageRecordReader
 vix.splunk.search.recordreader.image.regex = \.tgz$
 vix.splunk.search.recordreader.seq-image-reader.regex = data$
