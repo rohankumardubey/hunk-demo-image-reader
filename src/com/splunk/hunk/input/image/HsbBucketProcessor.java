@@ -66,9 +66,30 @@ public class HsbBucketProcessor implements ImageEventProcessor {
 							buckets[i][j][k], totalPixels));
 	}
 
-	private Map<String, Object> toMap(long[][][] rgbBuckets) {
+	private Map<String, Object> toMap(long[][][] bshBuckets) {
 		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("colors", rgbBuckets);
+		map.put("colors", toJsonObject(bshBuckets));
 		return map;
+	}
+
+	private Object toJsonObject(long[][][] bshBuckets) {
+		Map<Integer, Object> bMap = new HashMap<Integer, Object>();
+		for (int i = 0; i < bshBuckets.length; i++)
+			bMap.put(i, toJsonObject(bshBuckets[i]));
+		return bMap;
+	}
+
+	private Object toJsonObject(long[][] shBuckets) {
+		Map<Integer, Object> sMap = new HashMap<Integer, Object>();
+		for (int i = 0; i < shBuckets.length; i++)
+			sMap.put(i, toJsonObject(shBuckets[i]));
+		return sMap;
+	}
+
+	private Object toJsonObject(long[] hBuckets) {
+		Map<Integer, Object> hMap = new HashMap<Integer, Object>();
+		for (int i = 0; i < hBuckets.length; i++)
+			hMap.put(i, hBuckets[i]);
+		return hMap;
 	}
 }
