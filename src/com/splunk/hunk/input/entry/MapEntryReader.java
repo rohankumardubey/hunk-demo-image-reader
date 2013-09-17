@@ -1,6 +1,7 @@
 package com.splunk.hunk.input.entry;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -21,7 +22,8 @@ public class MapEntryReader implements EntryReader {
 	public InputStream getHdfsFileStream(String fsUri, String path, String key)
 			throws IOException {
 		FileSystem fs = FileSystem.get(URI.create(fsUri), new Configuration());
-		Reader reader = new MapFile.Reader(fs, path, fs.getConf());
+		String mapDir = new File(path).getParent();
+		Reader reader = new MapFile.Reader(fs, mapDir, fs.getConf());
 		return getEntryStream(path, key, reader);
 	}
 
