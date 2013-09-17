@@ -26,8 +26,8 @@ public class HsbBucketProcessor implements ImageEventProcessor {
 	@Override
 	public Map<String, Object> createEventFromImage(BufferedImage image) {
 		long[][][] hsbBuckets = createBuckets(image);
-		normalizeBuckets(hsbBuckets, image);
-		return toMap(hsbBuckets);
+		double[][][] pctBuckets = normalizedBuckets(hsbBuckets, image);
+		return toMap(pctBuckets);
 	}
 
 	private long[][][] createBuckets(BufferedImage image) {
@@ -57,36 +57,39 @@ public class HsbBucketProcessor implements ImageEventProcessor {
 		return (int) Math.floor(colorValue / bucketSize);
 	}
 
-	private void normalizeBuckets(long[][][] buckets, BufferedImage image) {
+	private double[][][] normalizedBuckets(long[][][] buckets,
+			BufferedImage image) {
 		int totalPixels = image.getWidth() * image.getHeight();
+		double[][][] pctBuckets = new double[b_buckets][s_buckets][h_buckets];
 		for (int i = 0; i < buckets.length; i++)
 			for (int j = 0; j < buckets[i].length; j++)
 				for (int k = 0; k < buckets[i][j].length; k++)
-					buckets[i][j][k] = (long) Math.floor(Utils.getPercentage(
-							buckets[i][j][k], totalPixels));
+					pctBuckets[i][j][k] = Utils.getPercentage(buckets[i][j][k],
+							totalPixels);
+		return pctBuckets;
 	}
 
-	private Map<String, Object> toMap(long[][][] bshBuckets) {
+	private Map<String, Object> toMap(double[][][] pctBuckets) {
 		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("colors", toJsonObject(bshBuckets));
+		map.put("colors", toJsonObject(pctBuckets));
 		return map;
 	}
 
-	private Object toJsonObject(long[][][] bshBuckets) {
+	private Object toJsonObject(double[][][] pctBuckets) {
 		Map<Integer, Object> bMap = new HashMap<Integer, Object>();
-		for (int i = 0; i < bshBuckets.length; i++)
-			bMap.put(i, toJsonObject(bshBuckets[i]));
+		for (int i = 0; i < pctBuckets.length; i++)
+			bMap.put(i, toJsonObject(pctBuckets[i]));
 		return bMap;
 	}
 
-	private Object toJsonObject(long[][] shBuckets) {
+	private Object toJsonObject(double[][] shBuckets) {
 		Map<Integer, Object> sMap = new HashMap<Integer, Object>();
 		for (int i = 0; i < shBuckets.length; i++)
 			sMap.put(i, toJsonObject(shBuckets[i]));
 		return sMap;
 	}
 
-	private Object toJsonObject(long[] hBuckets) {
+	private Object toJsonObject(double[] hBuckets) {
 		Map<Integer, Object> hMap = new HashMap<Integer, Object>();
 		for (int i = 0; i < hBuckets.length; i++)
 			hMap.put(i, hBuckets[i]);
