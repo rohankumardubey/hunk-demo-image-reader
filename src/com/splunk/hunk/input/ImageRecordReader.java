@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.Text;
@@ -18,15 +19,19 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.splunk.hunk.input.image.ImageEventProcessor;
 import com.splunk.hunk.input.image.RedGreenBlueEventProcessor;
 import com.splunk.mr.input.BaseSplunkRecordReader;
 import com.splunk.mr.input.VixInputSplit;
 
 public class ImageRecordReader extends BaseSplunkRecordReader {
 
-	private static Logger logger = Logger
-			.getLogger(BaseSplunkRecordReader.class);
+	public interface ImageEventProcessor {
+
+		Map<String, String> createEventFromImage(BufferedImage image);
+	}
+
+	private static final Logger logger = Logger
+			.getLogger(ImageRecordReader.class);
 
 	private final LinkedList<Map<String, String>> eventQueue = new LinkedList<Map<String, String>>();
 	private Text key = new Text();
@@ -99,7 +104,7 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 		if (image != null)
 			eventQueue.offer(createImageEvent(entry, image));
 		else
-			logger.debug("Could not read image: " + entry.getName());
+			logger.warn("Could not read image: " + entry.getName());
 	}
 
 	private BufferedImage readImage(TarArchiveEntry entry) throws IOException {
@@ -130,10 +135,7 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 
 	@Override
 	public void close() throws IOException {
-		try {
-			tarIn.close();
-		} catch (Exception ignore) {
-		}
+		IOUtils.closeQuietly(tarIn);
 		super.close();
 	}
 }
