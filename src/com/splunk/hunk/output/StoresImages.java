@@ -11,9 +11,9 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.MapFile;
+import org.apache.hadoop.io.MapFile.Writer;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
-import org.apache.hadoop.io.SequenceFile.Writer;
 import org.apache.hadoop.io.Text;
 
 public class StoresImages {
@@ -34,6 +34,7 @@ public class StoresImages {
 		Writer writer = null;
 		try {
 			writer = createWriter();
+			writer.setIndexInterval(2);
 			writeFiles(writer, fs.listStatus(inputDir));
 		} finally {
 			IOUtils.closeQuietly(writer);
@@ -42,8 +43,8 @@ public class StoresImages {
 	}
 
 	private Writer createWriter() throws IOException {
-		return SequenceFile.createWriter(fs, fs.getConf(), outputSeqFile,
-				Text.class, valueClass, CompressionType.NONE);
+		return new MapFile.Writer(fs.getConf(), fs, outputSeqFile.toUri()
+				.getPath(), keyClass, valueClass, CompressionType.NONE);
 	}
 
 	private void writeFiles(Writer writer, FileStatus[] listStatus)

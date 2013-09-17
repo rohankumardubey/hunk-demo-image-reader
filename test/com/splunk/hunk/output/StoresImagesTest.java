@@ -15,8 +15,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.SequenceFile.Reader;
+import org.apache.hadoop.io.MapFile;
+import org.apache.hadoop.io.MapFile.Reader;
+import org.apache.hadoop.io.Text;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,9 +36,10 @@ public class StoresImagesTest {
 		fs = FileSystem.getLocal(new Configuration());
 
 		dir = createTempDir();
-		outSeq = createTempFile(dir, "out.seq");
+		outSeq = createTempFile(dir, "out.map");
 
 		seqFilePath = new Path(outSeq.getAbsolutePath());
+		FileUtils.deleteQuietly(outSeq);
 		storesImages = new StoresImages(fs, new Path(dir.getAbsolutePath()),
 				seqFilePath);
 	}
@@ -58,20 +60,25 @@ public class StoresImagesTest {
 	@Test
 	public void createSequenceFile_filesToWrite_canReadSequenceFilesValues()
 			throws IOException, InstantiationException, IllegalAccessException {
-		createTempFileWithContent(dir, "one");
-		createTempFileWithContent(dir, "two");
+		File one = createTempFileWithContent(dir, "one");
+		File two = createTempFileWithContent(dir, "two");
 		storesImages.createSequenceFile();
-		verifyContentWasWrittenToSequenceFile();
+		verifyContentWasWrittenToSequenceFile(one, two);
 	}
 
-	private void verifyContentWasWrittenToSequenceFile() throws IOException,
-			InstantiationException, IllegalAccessException {
-		Reader reader = new SequenceFile.Reader(fs, seqFilePath, fs.getConf());
+	private void verifyContentWasWrittenToSequenceFile(File... files)
+			throws IOException, InstantiationException, IllegalAccessException {
+		Reader reader = new MapFile.Reader(fs, seqFilePath.toUri().getPath(),
+				fs.getConf());
 		try {
-			BytesWritable value = storesImages.valueClass.newInstance();
-			while (reader.next(storesImages.keyClass.newInstance(), value)
-					&& value.getLength() != 0)
-				assertEquals(FILE_CONTENT, getStringValue(value));
+			for (File f : files) {
+				Text key = storesImages.keyClass.newInstance();
+				key.set(f.getAbsolutePath());
+				BytesWritable value = storesImages.valueClass.newInstance();
+				reader.get(key, value);
+				String stringValue = getStringValue(value);
+				assertEquals(stringValue, FILE_CONTENT);
+			}
 		} finally {
 			IOUtils.closeQuietly(reader);
 		}
@@ -87,9 +94,9 @@ public class StoresImagesTest {
 			throws IOException, InstantiationException, IllegalAccessException {
 		File dir2 = new File(dir, "dir2");
 		dir2.mkdirs();
-		createTempFileWithContent(dir2, "one");
+		File file = createTempFileWithContent(dir2, "one");
 		storesImages.createSequenceFile();
-		verifyContentWasWrittenToSequenceFile();
+		verifyContentWasWrittenToSequenceFile(file);
 	}
 
 	private File createTempDir() throws IOException {
