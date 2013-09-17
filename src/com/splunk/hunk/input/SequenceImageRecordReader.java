@@ -31,7 +31,6 @@ public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 	@Override
 	public void vixInitialize(VixInputSplit split, TaskAttemptContext context)
 			throws IOException, InterruptedException {
-
 		recordReader = new SequenceFileRecordReader<Text, BytesWritable>();
 		gLogger.info("Init: " + split.getPath());
 		recordReader.initialize(split, context);
@@ -86,7 +85,7 @@ public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 
 	@Override
 	public Pattern getFilePattern() {
-		return Pattern.compile("\\.seq$");
+		return Pattern.compile("\\.map/data$");
 	}
 
 	@Override
