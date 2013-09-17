@@ -17,7 +17,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import com.splunk.hunk.input.image.HsbBucketProcessor;
 import com.splunk.mr.input.BaseSplunkRecordReader;
@@ -115,11 +114,7 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 	}
 
 	private void setNextValue(Map<String, Object> event) throws IOException {
-		value.set(eventAsJson(event));
-	}
-
-	private String eventAsJson(Map<String, Object> event) throws IOException {
-		return new ObjectMapper().writeValueAsString(event);
+		value.set(Utils.eventAsJson(event));
 	}
 
 	// -- The end of the interesting stuff

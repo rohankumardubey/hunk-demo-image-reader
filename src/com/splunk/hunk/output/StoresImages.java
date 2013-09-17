@@ -43,7 +43,7 @@ public class StoresImages {
 
 	private Writer createWriter() throws IOException {
 		return SequenceFile.createWriter(fs, fs.getConf(), outputSeqFile,
-				Text.class, valueClass, CompressionType.RECORD);
+				Text.class, valueClass, CompressionType.NONE);
 	}
 
 	private void writeFiles(Writer writer, FileStatus[] listStatus)
