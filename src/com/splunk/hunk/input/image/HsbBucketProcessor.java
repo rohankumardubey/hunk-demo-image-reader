@@ -2,6 +2,9 @@ package com.splunk.hunk.input.image;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,16 +34,18 @@ public class HsbBucketProcessor implements ImageEventProcessor {
 	}
 
 	private long[][][] createBuckets(BufferedImage image) {
-		long[][][] rgbBuckets = new long[b_buckets][s_buckets][h_buckets];
-		for (int x = 0; x < image.getWidth(); x++)
-			for (int y = 0; y < image.getHeight(); y++)
-				putPixelInBucket(rgbBuckets, image, x, y);
+		final long[][][] rgbBuckets = new long[b_buckets][s_buckets][h_buckets];
+		convertTo2DWithoutUsingGetRGB(image, new PixelListener() {
+			@Override
+			public void gotPixel(int pixel) {
+				putPixelInBucket(rgbBuckets, pixel);
+			}
+		});
 		return rgbBuckets;
 	}
 
-	private void putPixelInBucket(long[][][] hsbBuckets, BufferedImage image,
-			int x, int y) {
-		Color c = new Color(image.getRGB(x, y));
+	private void putPixelInBucket(long[][][] hsbBuckets, int pixel) {
+		Color c = new Color(pixel);
 		float[] hsb = Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(),
 				null);
 
@@ -94,5 +99,47 @@ public class HsbBucketProcessor implements ImageEventProcessor {
 		for (int i = 0; i < hBuckets.length; i++)
 			hMap.put(i, hBuckets[i]);
 		return hMap;
+	}
+
+	private interface PixelListener {
+		void gotPixel(int pixel);
+	}
+
+	// Experimental
+	// http://stackoverflow.com/questions/6524196/java-get-pixel-array-from-image
+
+	private static void convertTo2DWithoutUsingGetRGB(BufferedImage image,
+			PixelListener listener) {
+		DataBuffer dataBuffer = image.getRaster().getDataBuffer();
+		if (dataBuffer instanceof DataBufferByte) {
+			final byte[] pixels = ((DataBufferByte) dataBuffer).getData();
+			final boolean hasAlphaChannel = image.getAlphaRaster() != null;
+
+			if (hasAlphaChannel) {
+				final int pixelLength = 4;
+				for (int pixel = 0; pixel < pixels.length; pixel += pixelLength) {
+					int argb = 0;
+					argb += (((int) pixels[pixel] & 0xff) << 24); // alpha
+					argb += ((int) pixels[pixel + 1] & 0xff); // blue
+					argb += (((int) pixels[pixel + 2] & 0xff) << 8); // green
+					argb += (((int) pixels[pixel + 3] & 0xff) << 16); // red
+					listener.gotPixel(argb);
+				}
+			} else {
+				final int pixelLength = 3;
+				for (int pixel = 0; pixel < pixels.length; pixel += pixelLength) {
+					int argb = 0;
+					argb += -16777216; // 255 alpha
+					argb += ((int) pixels[pixel] & 0xff); // blue
+					argb += (((int) pixels[pixel + 1] & 0xff) << 8); // green
+					argb += (((int) pixels[pixel + 2] & 0xff) << 16); // red
+					listener.gotPixel(argb);
+				}
+			}
+		} else if (dataBuffer instanceof DataBufferInt) {
+			int[] pixels = ((DataBufferInt) dataBuffer).getData();
+			for (int i = 0; i < pixels.length; i++)
+				listener.gotPixel(pixels[i]);
+		}
 	}
 }
