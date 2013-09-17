@@ -52,7 +52,7 @@ public class StoresImagesTest {
 	@Test
 	public void createSequenceFile__returnExistingSequenceFile()
 			throws IOException {
-		Path created = storesImages.createSequenceFile();
+		Path created = storesImages.storeImages();
 		assertEquals(created, seqFilePath);
 		assertTrue(fs.exists(seqFilePath));
 	}
@@ -62,7 +62,7 @@ public class StoresImagesTest {
 			throws IOException, InstantiationException, IllegalAccessException {
 		File one = createTempFileWithContent(dir, "one");
 		File two = createTempFileWithContent(dir, "two");
-		storesImages.createSequenceFile();
+		storesImages.storeImages();
 		verifyContentWasWrittenToSequenceFile(one, two);
 	}
 
@@ -95,7 +95,7 @@ public class StoresImagesTest {
 		File dir2 = new File(dir, "dir2");
 		dir2.mkdirs();
 		File file = createTempFileWithContent(dir2, "one");
-		storesImages.createSequenceFile();
+		storesImages.storeImages();
 		verifyContentWasWrittenToSequenceFile(file);
 	}
 

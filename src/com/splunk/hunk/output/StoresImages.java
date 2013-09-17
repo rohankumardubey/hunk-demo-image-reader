@@ -30,7 +30,7 @@ public class StoresImages {
 		this.outputSeqFile = outputSeqFile;
 	}
 
-	public Path createSequenceFile() throws IOException {
+	public Path storeImages() throws IOException {
 		Writer writer = null;
 		try {
 			writer = createWriter();
