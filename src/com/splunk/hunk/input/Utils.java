@@ -1,6 +1,6 @@
 package com.splunk.hunk.input;
 
-public class Util {
+public class Utils {
 
 	public static double divideLongs(long totalBytes, long rgb) {
 		if (rgb == 0 || totalBytes == 0) {

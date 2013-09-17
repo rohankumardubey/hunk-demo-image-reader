@@ -16,6 +16,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 
+import com.splunk.hunk.input.image.ImageEventProcessor;
+import com.splunk.hunk.input.image.RedGreenBlueEventProcessor;
 import com.splunk.mr.input.BaseSplunkRecordReader;
 import com.splunk.mr.input.VixInputSplit;
 
@@ -24,10 +26,11 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 	private static Logger logger = Logger
 			.getLogger(BaseSplunkRecordReader.class);
 
+	private final LinkedList<String> eventQueue = new LinkedList<String>();
 	private Text key = new Text();
 	private Text value = new Text();
 	private TarArchiveInputStream tarIn;
-	private ImageEventProcessor imageProcessor;
+	private ImageEventProcessor imagePreProcessor;
 
 	private long totalBytesToRead;
 
@@ -48,7 +51,7 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 		tarIn = new TarArchiveInputStream(new GzipCompressorInputStream(
 				fs.open(split.getPath())));
 		totalBytesToRead = split.getLength() - split.getStart();
-		imageProcessor = new RedGreenBlueEventProcessor();
+		imagePreProcessor = new RedGreenBlueEventProcessor();
 	}
 
 	@Override
@@ -60,8 +63,6 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 	public Text getCurrentValue() throws IOException, InterruptedException {
 		return value;
 	}
-
-	private final LinkedList<String> eventQueue = new LinkedList<String>();
 
 	@Override
 	public boolean nextKeyValue() throws IOException, InterruptedException {
@@ -91,7 +92,7 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 		BufferedImage image = readImage(entry);
 		if (image != null)
 			eventQueue.offer("image=" + entry.getName() + " "
-					+ imageProcessor.createEventFromImage(image));
+					+ imagePreProcessor.createEventFromImage(image));
 		else
 			logger.debug("Could not read image: " + entry.getName());
 	}
@@ -106,7 +107,7 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 
 	@Override
 	public float getProgress() throws IOException, InterruptedException {
-		return new Double(Util.divideLongs(tarIn.getBytesRead(),
+		return new Double(Utils.divideLongs(tarIn.getBytesRead(),
 				totalBytesToRead)).floatValue();
 	}
 

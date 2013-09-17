@@ -1,4 +1,4 @@
-package com.splunk.hunk.input;
+package com.splunk.hunk.input.image;
 
 import java.awt.image.BufferedImage;
 
