@@ -27,6 +27,9 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 
 	public interface ImageEventProcessor {
 
+		/**
+		 * @return key values with data from the image
+		 */
 		Map<String, String> createEventFromImage(BufferedImage image);
 	}
 
@@ -41,10 +44,7 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 
 	private long totalBytesToRead;
 
-	@Override
-	public String getName() {
-		return "image";
-	}
+	// -- Interesting stuff start here
 
 	@Override
 	public Pattern getFilePattern() {
@@ -59,11 +59,6 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 				fs.open(split.getPath())));
 		totalBytesToRead = split.getLength() - split.getStart();
 		imagePreProcessor = new RedGreenBlueEventProcessor();
-	}
-
-	@Override
-	public Text getCurrentKey() throws IOException, InterruptedException {
-		return key;
 	}
 
 	@Override
@@ -127,9 +122,11 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 		return new ObjectMapper().writeValueAsString(event);
 	}
 
+	// -- The end of the interesting stuff
+
 	@Override
 	public float getProgress() throws IOException, InterruptedException {
-		return new Double(Utils.divideLongs(tarIn.getBytesRead(),
+		return new Double(Utils.getPercentage(tarIn.getBytesRead(),
 				totalBytesToRead)).floatValue();
 	}
 
@@ -137,5 +134,15 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 	public void close() throws IOException {
 		IOUtils.closeQuietly(tarIn);
 		super.close();
+	}
+
+	@Override
+	public String getName() {
+		return "image";
+	}
+
+	@Override
+	public Text getCurrentKey() throws IOException, InterruptedException {
+		return key;
 	}
 }
