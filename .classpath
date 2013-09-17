@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/hadoop"/>
+	<classpathentry kind="lib" path="/hadoop/libs/1.0/hadoop-core-1.0.3.jar"/>
+	<classpathentry kind="lib" path="/hadoop/libs/test/junit-4.11.jar"/>
+	<classpathentry kind="lib" path="/hadoop/libs/common/commons-io-2.1.jar"/>
+	<classpathentry kind="lib" path="/hadoop/libs/common/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="/hadoop/libs/common/commons-compress-1.5.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
