@@ -2,8 +2,10 @@ package com.splunk.hunk.output;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -73,6 +75,12 @@ public class StoresImages {
 			IOUtils.closeQuietly(fileBytes);
 		}
 		return fileBytes;
+	}
+
+	public static StoresImages create(String uri, String dir, String output)
+			throws IOException {
+		return new StoresImages(FileSystem.get(URI.create(uri),
+				new Configuration()), new Path(dir), new Path(output));
 	}
 
 }
