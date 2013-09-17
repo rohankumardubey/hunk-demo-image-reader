@@ -85,7 +85,7 @@ public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 
 	@Override
 	public Pattern getFilePattern() {
-		return Pattern.compile("\\.map/data$");
+		return Pattern.compile("data$");
 	}
 
 	@Override
