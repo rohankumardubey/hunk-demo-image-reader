@@ -19,7 +19,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.splunk.hunk.input.image.ColorBucket2dProcessor;
+import com.splunk.hunk.input.image.HsbBucketProcessor;
 import com.splunk.mr.input.BaseSplunkRecordReader;
 import com.splunk.mr.input.VixInputSplit;
 
@@ -58,7 +58,7 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 		tarIn = new TarArchiveInputStream(new GzipCompressorInputStream(
 				fs.open(split.getPath())));
 		totalBytesToRead = split.getLength() - split.getStart();
-		imagePreProcessor = new ColorBucket2dProcessor();
+		imagePreProcessor = new HsbBucketProcessor();
 	}
 
 	@Override
