@@ -9,5 +9,7 @@
 	<classpathentry kind="lib" path="/hadoop/libs/common/commons-io-2.1.jar"/>
 	<classpathentry kind="lib" path="/hadoop/libs/common/log4j-1.2.15.jar"/>
 	<classpathentry kind="lib" path="/hadoop/libs/common/commons-compress-1.5.jar"/>
+	<classpathentry kind="lib" path="/hadoop/libs/common/jackson-core-asl-1.8.8.jar"/>
+	<classpathentry kind="lib" path="/hadoop/libs/common/jackson-mapper-asl-1.8.8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

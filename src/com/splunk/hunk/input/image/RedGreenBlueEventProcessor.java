@@ -1,6 +1,8 @@
 package com.splunk.hunk.input.image;
 
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.splunk.hunk.input.Utils;
 
@@ -15,20 +17,20 @@ public class RedGreenBlueEventProcessor implements ImageEventProcessor {
 	}
 
 	@Override
-	public String createEventFromImage(BufferedImage image) {
-		return createEventString(RGBUtils.getPixelRgbs(image));
+	public Map<String, String> createEventFromImage(BufferedImage image) {
+		return createEventKeyValues(RGBUtils.getPixelRgbs(image));
 	}
 
-	private String createEventString(long[] rgbs) {
+	private Map<String, String> createEventKeyValues(long[] rgbs) {
 		long totalBytes = 0;
 		for (int i = 0; i < rgbs.length; i++) {
 			totalBytes += rgbs[i];
 		}
-		StringBuffer eventString = new StringBuffer();
+
+		Map<String, String> kvs = new HashMap<String, String>();
 		for (int i = 0; i < rgbs.length; i++) {
-			eventString.append(" " + labels[i] + "="
-					+ Utils.divideLongs(totalBytes, rgbs[i]));
+			kvs.put(labels[i], "" + Utils.divideLongs(totalBytes, rgbs[i]));
 		}
-		return eventString.toString();
+		return kvs;
 	}
 }

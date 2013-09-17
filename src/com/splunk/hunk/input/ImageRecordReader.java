@@ -3,6 +3,7 @@ package com.splunk.hunk.input;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
@@ -15,6 +16,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import com.splunk.hunk.input.image.ImageEventProcessor;
 import com.splunk.hunk.input.image.RedGreenBlueEventProcessor;
@@ -26,7 +28,7 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 	private static Logger logger = Logger
 			.getLogger(BaseSplunkRecordReader.class);
 
-	private final LinkedList<String> eventQueue = new LinkedList<String>();
+	private final LinkedList<Map<String, String>> eventQueue = new LinkedList<Map<String, String>>();
 	private Text key = new Text();
 	private Text value = new Text();
 	private TarArchiveInputStream tarIn;
@@ -70,7 +72,7 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 			tryPopulatingQueue(tarIn.getNextTarEntry());
 
 		if (!eventQueue.isEmpty()) {
-			value.set(eventQueue.pop());
+			setNextValue(eventQueue.pop());
 			return true;
 		} else {
 			return false;
@@ -91,10 +93,17 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 	private void putImageInQueue(TarArchiveEntry entry) throws IOException {
 		BufferedImage image = readImage(entry);
 		if (image != null)
-			eventQueue.offer("image=" + entry.getName() + " "
-					+ imagePreProcessor.createEventFromImage(image));
+			eventQueue.offer(createImageEvent(entry, image));
 		else
 			logger.debug("Could not read image: " + entry.getName());
+	}
+
+	private Map<String, String> createImageEvent(TarArchiveEntry entry,
+			BufferedImage image) {
+		Map<String, String> imageData = imagePreProcessor
+				.createEventFromImage(image);
+		imageData.put("image", entry.getName());
+		return imageData;
 	}
 
 	private boolean isFile(TarArchiveEntry entry) {
@@ -103,6 +112,18 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 
 	private BufferedImage readImage(TarArchiveEntry entry) throws IOException {
 		return ImageIO.read(new BoundedInputStream(tarIn, entry.getSize()));
+	}
+
+	private void setNextValue(Map<String, String> event) {
+		value.set(eventAsJson(event));
+	}
+
+	private String eventAsJson(Map<String, String> event) {
+		try {
+			return new ObjectMapper().writeValueAsString(event);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
