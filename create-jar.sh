@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 
 script_dir=$(dirname $0)
 hunk_dir=$1
