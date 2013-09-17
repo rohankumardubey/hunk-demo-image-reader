@@ -11,13 +11,13 @@ import com.splunk.hunk.input.Utils;
 public class RedGreenBlueEventProcessor implements ImageEventProcessor {
 
 	@Override
-	public Map<String, String> createEventFromImage(BufferedImage image) {
+	public Map<String, Object> createEventFromImage(BufferedImage image) {
 		RGB imageRgbs = RGB.getImageRgbs(image);
 		return createEventKeyValues(imageRgbs);
 	}
 
-	private Map<String, String> createEventKeyValues(RGB rgbs) {
-		Map<String, String> kvs = new HashMap<String, String>();
+	private Map<String, Object> createEventKeyValues(RGB rgbs) {
+		Map<String, Object> kvs = new HashMap<String, Object>();
 		kvs.put("red", "" + rgbs.getRedPercentage());
 		kvs.put("green", "" + rgbs.getGreenPercentage());
 		kvs.put("blue", "" + rgbs.getBluePercentage());

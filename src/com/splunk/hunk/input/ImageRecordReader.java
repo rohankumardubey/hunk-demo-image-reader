@@ -19,7 +19,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.splunk.hunk.input.image.RedGreenBlueEventProcessor;
+import com.splunk.hunk.input.image.ColorBucket2dProcessor;
 import com.splunk.mr.input.BaseSplunkRecordReader;
 import com.splunk.mr.input.VixInputSplit;
 
@@ -30,13 +30,13 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 		/**
 		 * @return key values with data from the image
 		 */
-		Map<String, String> createEventFromImage(BufferedImage image);
+		Map<String, Object> createEventFromImage(BufferedImage image);
 	}
 
 	private static final Logger logger = Logger
 			.getLogger(ImageRecordReader.class);
 
-	private final LinkedList<Map<String, String>> eventQueue = new LinkedList<Map<String, String>>();
+	private final LinkedList<Map<String, Object>> eventQueue = new LinkedList<Map<String, Object>>();
 	private Text key = new Text();
 	private Text value = new Text();
 	private TarArchiveInputStream tarIn;
@@ -58,7 +58,7 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 		tarIn = new TarArchiveInputStream(new GzipCompressorInputStream(
 				fs.open(split.getPath())));
 		totalBytesToRead = split.getLength() - split.getStart();
-		imagePreProcessor = new RedGreenBlueEventProcessor();
+		imagePreProcessor = new ColorBucket2dProcessor();
 	}
 
 	@Override
@@ -106,19 +106,19 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 		return ImageIO.read(new BoundedInputStream(tarIn, entry.getSize()));
 	}
 
-	private Map<String, String> createImageEvent(TarArchiveEntry entry,
+	private Map<String, Object> createImageEvent(TarArchiveEntry entry,
 			BufferedImage image) {
-		Map<String, String> imageData = imagePreProcessor
+		Map<String, Object> imageData = imagePreProcessor
 				.createEventFromImage(image);
 		imageData.put("image", entry.getName());
 		return imageData;
 	}
 
-	private void setNextValue(Map<String, String> event) throws IOException {
+	private void setNextValue(Map<String, Object> event) throws IOException {
 		value.set(eventAsJson(event));
 	}
 
-	private String eventAsJson(Map<String, String> event) throws IOException {
+	private String eventAsJson(Map<String, Object> event) throws IOException {
 		return new ObjectMapper().writeValueAsString(event);
 	}
 

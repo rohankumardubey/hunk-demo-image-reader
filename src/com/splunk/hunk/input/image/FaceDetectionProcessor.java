@@ -8,7 +8,7 @@ import com.splunk.hunk.input.ImageRecordReader.ImageEventProcessor;
 public class FaceDetectionProcessor implements ImageEventProcessor {
 
 	@Override
-	public Map<String, String> createEventFromImage(BufferedImage image) {
+	public Map<String, Object> createEventFromImage(BufferedImage image) {
 		throw new UnsupportedOperationException();
 	}
 
