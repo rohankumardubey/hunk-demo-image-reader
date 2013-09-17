@@ -49,7 +49,7 @@ public class RedGreenBlueEventProcessor implements ImageEventProcessor {
 		}
 
 		private double getColorPercentage(long color) {
-			return Utils.getPercentage(red + green + blue, color);
+			return Utils.getPercentage(color, red + green + blue);
 		}
 
 		private static final int RED_IDX = 0;
