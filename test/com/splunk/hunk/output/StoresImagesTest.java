@@ -41,7 +41,7 @@ public class StoresImagesTest {
 		seqFilePath = new Path(outSeq.getAbsolutePath());
 		FileUtils.deleteQuietly(outSeq);
 		storesImages = new StoresImages(fs, new Path(dir.getAbsolutePath()),
-				seqFilePath);
+				fs, seqFilePath);
 	}
 
 	@After
@@ -73,7 +73,8 @@ public class StoresImagesTest {
 		try {
 			for (File f : files) {
 				Text key = storesImages.keyClass.newInstance();
-				key.set(f.getAbsolutePath());
+				key.set(StoresImages.getKeyFromPath(new Path(f
+						.getAbsolutePath())));
 				BytesWritable value = storesImages.valueClass.newInstance();
 				reader.get(key, value);
 				String stringValue = getStringValue(value);

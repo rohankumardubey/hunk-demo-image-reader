@@ -2,7 +2,10 @@ package com.splunk.hunk.output;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -22,11 +25,14 @@ public class StoresImages {
 	public final Class<BytesWritable> valueClass = BytesWritable.class;
 	private Path inputDir;
 	private Path outputSeqFile;
-	private FileSystem fs;
+	private FileSystem inFs;
+	private FileSystem outFs;
 
-	public StoresImages(FileSystem fs, Path inputDir, Path outputSeqFile) {
-		this.fs = fs;
+	public StoresImages(FileSystem inFs, Path inputDir, FileSystem outFs,
+			Path outputSeqFile) {
+		this.inFs = inFs;
 		this.inputDir = inputDir;
+		this.outFs = outFs;
 		this.outputSeqFile = outputSeqFile;
 	}
 
@@ -35,7 +41,10 @@ public class StoresImages {
 		try {
 			writer = createWriter();
 			writer.setIndexInterval(2);
-			writeFiles(writer, fs.listStatus(inputDir));
+			TreeMap<String, Path> paths = getSortedPaths(writer,
+					inFs.listStatus(inputDir));
+			for (Entry<String, Path> entry : paths.entrySet())
+				appendFileContent(writer, entry.getValue());
 		} finally {
 			IOUtils.closeQuietly(writer);
 		}
@@ -43,25 +52,31 @@ public class StoresImages {
 	}
 
 	private Writer createWriter() throws IOException {
-		return new MapFile.Writer(fs.getConf(), fs, outputSeqFile.toUri()
+		return new MapFile.Writer(outFs.getConf(), outFs, outputSeqFile.toUri()
 				.getPath(), keyClass, valueClass, CompressionType.NONE);
 	}
 
-	private void writeFiles(Writer writer, FileStatus[] listStatus)
-			throws IOException {
+	private TreeMap<String, Path> getSortedPaths(Writer writer,
+			FileStatus[] listStatus) throws IOException {
+		TreeMap<String, Path> paths = new TreeMap<String, Path>();
 		for (FileStatus f : listStatus)
 			if (!f.isDir())
-				appendFileContent(writer, f);
+				paths.put(getKeyFromPath(f.getPath()), f.getPath());
 			else
-				writeFiles(writer, fs.listStatus(f.getPath()));
+				paths.putAll(getSortedPaths(writer,
+						inFs.listStatus(f.getPath())));
+		return paths;
 	}
 
-	private void appendFileContent(Writer writer, FileStatus f)
-			throws IOException {
-		Path p = f.getPath();
-		ByteArrayOutputStream fileBytes = readFilesBytes(p);
-		writer.append(new Text(p.toUri().getPath()), new BytesWritable(
+	private void appendFileContent(Writer writer, Path path) throws IOException {
+		ByteArrayOutputStream fileBytes = readFilesBytes(path);
+		writer.append(new Text(getKeyFromPath(path)), new BytesWritable(
 				fileBytes.toByteArray()));
+	}
+
+	public static String getKeyFromPath(Path p)
+			throws UnsupportedEncodingException {
+		return p.toString().toLowerCase().replaceAll(" ", "");
 	}
 
 	private ByteArrayOutputStream readFilesBytes(Path p) throws IOException {
@@ -69,7 +84,7 @@ public class StoresImages {
 		FSDataInputStream open = null;
 		try {
 			fileBytes = new ByteArrayOutputStream();
-			open = fs.open(p);
+			open = inFs.open(p);
 			IOUtils.copyLarge(open, fileBytes);
 		} finally {
 			IOUtils.closeQuietly(open);
@@ -78,10 +93,10 @@ public class StoresImages {
 		return fileBytes;
 	}
 
-	public static StoresImages create(String uri, String dir, String output)
-			throws IOException {
-		return new StoresImages(FileSystem.get(URI.create(uri),
-				new Configuration()), new Path(dir), new Path(output));
+	public static StoresImages create(String dirFsUri, String dir,
+			String outFsUri, String output) throws IOException {
+		return new StoresImages(FileSystem.get(URI.create(dirFsUri),
+				new Configuration()), new Path(dir), FileSystem.get(
+				URI.create(outFsUri), new Configuration()), new Path(output));
 	}
-
 }
