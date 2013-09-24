@@ -44,7 +44,13 @@ public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 		gLogger.info("Key: " + keyAsString);
 		Map<String, Object> event;
 		if (image != null) {
-			event = imageProcessor.createEventFromImage(image);
+			try {
+				event = imageProcessor.createEventFromImage(image);
+			} catch (Exception e) {
+				event = new HashMap<String, Object>();
+				event.put("value", "image threw exception: "
+						+ e.getClass().getSimpleName());
+			}
 		} else {
 			event = new HashMap<String, Object>();
 			event.put("value", "image was null");
