@@ -29,7 +29,7 @@ public class HsbBucketProcessor implements ImageEventProcessor {
 	@Override
 	public Map<String, Object> createEventFromImage(BufferedImage image) {
 		long[][][] hsbBuckets = createBuckets(image);
-		double[][][] pctBuckets = normalizedBuckets(hsbBuckets, image);
+		float[][][] pctBuckets = normalizedBuckets(hsbBuckets, image);
 		return toMap(pctBuckets);
 	}
 
@@ -62,43 +62,22 @@ public class HsbBucketProcessor implements ImageEventProcessor {
 		return (int) Math.floor(colorValue / bucketSize);
 	}
 
-	private double[][][] normalizedBuckets(long[][][] buckets,
+	private float[][][] normalizedBuckets(long[][][] buckets,
 			BufferedImage image) {
 		int totalPixels = image.getWidth() * image.getHeight();
-		double[][][] pctBuckets = new double[b_buckets][s_buckets][h_buckets];
+		float[][][] pctBuckets = new float[b_buckets][s_buckets][h_buckets];
 		for (int i = 0; i < buckets.length; i++)
 			for (int j = 0; j < buckets[i].length; j++)
 				for (int k = 0; k < buckets[i][j].length; k++)
-					pctBuckets[i][j][k] = Utils.getPercentage(buckets[i][j][k],
-							totalPixels);
+					pctBuckets[i][j][k] = (float) Utils.getPercentage(
+							buckets[i][j][k], totalPixels);
 		return pctBuckets;
 	}
 
-	private Map<String, Object> toMap(double[][][] pctBuckets) {
+	private Map<String, Object> toMap(float[][][] pctBuckets) {
 		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("colors", toJsonObject(pctBuckets));
+		map.put("colors", pctBuckets);
 		return map;
-	}
-
-	private Object toJsonObject(double[][][] pctBuckets) {
-		Map<Integer, Object> bMap = new HashMap<Integer, Object>();
-		for (int i = 0; i < pctBuckets.length; i++)
-			bMap.put(i, toJsonObject(pctBuckets[i]));
-		return bMap;
-	}
-
-	private Object toJsonObject(double[][] shBuckets) {
-		Map<Integer, Object> sMap = new HashMap<Integer, Object>();
-		for (int i = 0; i < shBuckets.length; i++)
-			sMap.put(i, toJsonObject(shBuckets[i]));
-		return sMap;
-	}
-
-	private Object toJsonObject(double[] hBuckets) {
-		Map<Integer, Object> hMap = new HashMap<Integer, Object>();
-		for (int i = 0; i < hBuckets.length; i++)
-			hMap.put(i, hBuckets[i]);
-		return hMap;
 	}
 
 	private interface PixelListener {

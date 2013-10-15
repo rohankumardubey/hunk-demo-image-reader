@@ -140,4 +140,10 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 	public Text getCurrentKey() throws IOException, InterruptedException {
 		return key;
 	}
+
+	@Override
+	public String getOutputDataFormat() {
+		return "json";
+	}
+
 }

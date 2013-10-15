@@ -98,4 +98,10 @@ public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 	public Text getCurrentKey() throws IOException, InterruptedException {
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public String getOutputDataFormat() {
+		return "json";
+	}
+
 }
