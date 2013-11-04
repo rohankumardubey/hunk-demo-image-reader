@@ -2,8 +2,8 @@
 
 script_dir=$(cd $(dirname $0) && pwd)
 libs="$script_dir"/lib
-classes="$script_dir"/classes
 build="$script_dir"/build
+classes="$build"/classes
 jar="$build"/hunk-image-reader.jar
 
 mkdir -p "$classes"
