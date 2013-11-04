@@ -5,5 +5,10 @@
     <info organisation="com.splunk.hunk" module="image-reader" />
     <dependencies>
         <!-- dependency org="org" name="name" rev="0.0.1"/ -->
+        <dependency org="commons-io" name="commons-io" rev="2.4"/>
+        <dependency org="org.apache.hadoop" name="hadoop-core" rev="1.2.1"/>
+        <dependency org="log4j" name="log4j" rev="1.2.16"/>
+        <dependency org="org.codehaus.jackson" name="jackson-core-asl" rev="1.9.13"/>
+        <dependency org="org.apache.commons" name="commons-compress" rev="1.5"/>
     </dependencies>
 </ivy-module>
