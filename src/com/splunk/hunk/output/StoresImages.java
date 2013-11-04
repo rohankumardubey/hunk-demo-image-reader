@@ -33,8 +33,11 @@ import org.apache.hadoop.io.MapFile.Writer;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Text;
 
+import com.splunk.hunk.input.SequenceImageRecordReader;
+
 /**
- * Helper class for storing a directory that has images in a MapFile.
+ * Helper class for storing a directory that has images in a MapFile, that can
+ * then be read/preprocessed by {@link SequenceImageRecordReader}.
  */
 public class StoresImages {
 
