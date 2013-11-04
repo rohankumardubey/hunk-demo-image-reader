@@ -29,3 +29,19 @@ The Hadoop mapfile can be created with com.splunk.hunk.output.StoresImages.class
   vix.splunk.search.recordreader = com.splunk.hunk.input.ImageRecordReader,com.splunk.hunk.input.SequenceImageRecordReader
   vix.splunk.search.recordreader.image.regex = \.tgz$
   vix.splunk.search.recordreader.seq-image-reader.regex = data$
+
+## Build me!
+
+This project needs the Hunk jars to be built or developed on. Currently Hunk jars come with Splunk packages built for 64-bit *nix.
+To build me, you can either set environment variable $SPLUNK_HOME to a Splunk installation/extraction and use the build script, or do everything yourself.
+
+### Automated
+1. Set environment variable $SPLUNK_HOME to a path where Splunk is installed or extracted.
+2. Run `ant` in the project directory.
+3. Dependencies have been fetched and you should have a build in the build/ directory.
+
+### IKEA
+1. Get all the jars defined in .classpath or ivy.xml and put them in the lib/ directory.
+2. Extract a Splunk with Hunk jars and copy the jars from $SPLUNK_HOME/bin/jars to lib/
+3. Run the ./create-jar.sh or manually enter the commands that's in the script.
+4. You should now have a .jar somewhere
