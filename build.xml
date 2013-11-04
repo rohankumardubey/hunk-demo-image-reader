@@ -1,69 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns:ivy="antlib:org.apache.ivy.ant" name="hunk-image-reader" basedir="." default="build" >
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="hunk-image-reader" basedir="." default="build">
 
-    <property name="ivy.install.version" value="2.3.0-rc2" />
-    <property name="ivy.home" value="${user.home}/.ivy2" />
-    <property name="ivy.jar.dir" value="${ivy.home}/lib" />
-    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
-    <property environment="env" />
+	<property name="ivy.install.version" value="2.3.0-rc2" />
+	<property name="ivy.home" value="${user.home}/.ivy2" />
+	<property name="ivy.jar.dir" value="${ivy.home}/lib" />
+	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+	<property environment="env" />
 
-    <target name="set-splunk-home">
-        <fail unless="env.SPLUNK_HOME" message="Set environment variable $SPLUNK_HOME to a path where Splunk is installed/extracted."/>
-        <property name="splunk.home" value="${env.SPLUNK_HOME}"/>
-    </target>
+	<target name="set-splunk-home">
+		<fail unless="env.SPLUNK_HOME" message="Set environment variable $SPLUNK_HOME to a path where Splunk is installed/extracted." />
+		<property name="splunk.home" value="${env.SPLUNK_HOME}" />
+	</target>
 
-    <target name="download-ivy" depends="check-for-ivy-existance" unless="ivy-exists">
+	<target name="download-ivy" depends="check-for-ivy-existance" unless="ivy-exists">
 
-        <mkdir dir="${ivy.jar.dir}"/>
-        <!-- download Ivy from web site so that it can be used even without any special installation -->
-        <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
-            dest="${ivy.jar.file}" usetimestamp="true"/>
-    </target>
+		<mkdir dir="${ivy.jar.dir}" />
+		<!-- download Ivy from web site so that it can be used even without any special installation -->
+		<get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true" />
+	</target>
 
-    <target name="check-for-ivy-existance">
-        <available file="${ivy.jar.file}" type="file" property="ivy-exists" />
-    </target>
+	<target name="check-for-ivy-existance">
+		<available file="${ivy.jar.file}" type="file" property="ivy-exists" />
+	</target>
 
-    <target name="init-ivy" depends="download-ivy">
-        <!-- try to load ivy here from ivy home, in case the user has not already dropped
+	<target name="init-ivy" depends="download-ivy">
+		<!-- try to load ivy here from ivy home, in case the user has not already dropped
               it into ant's lib dir (note that the latter copy will always take precedence).
               We will not fail as long as local lib dir exists (it may be empty) and
               ivy is in at least one of ant's lib dir or the local lib dir. -->
-        <path id="ivy.lib.path">
-            <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+		<path id="ivy.lib.path">
+			<fileset dir="${ivy.jar.dir}" includes="*.jar" />
 
-        </path>
-        <taskdef resource="org/apache/ivy/ant/antlib.xml"
-            uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
-    </target>
+		</path>
+		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path" />
+	</target>
 
-    <target name="ivy-retrieve" depends="init-ivy">
-        <ivy:retrieve />
-    </target>
+	<target name="ivy-retrieve" depends="init-ivy">
+		<ivy:retrieve />
+	</target>
 
-    <target name="copy-hunk-jars">
-        <exec executable="${basedir}/copy-hunk-jars.sh">
-            <arg value="${splunk.home}"/>
-        </exec>
-    </target>
+	<target name="copy-hunk-jars">
+		<exec executable="${basedir}/copy-hunk-jars.sh">
+			<arg value="${splunk.home}" />
+		</exec>
+	</target>
 
-    <target name="create-jar">
-        <exec executable="${basedir}/create-jar.sh"/>
-    </target>
+	<target name="create-jar">
+		<exec executable="${basedir}/create-jar.sh" />
+	</target>
 
-    <target name="build" depends="set-splunk-home">
-        <antcall>
-            <target name="ivy-retrieve"/>
-            <target name="copy-hunk-jars"/>
-            <target name="create-jar"/>
-        </antcall>
-    </target>
+	<target name="build" depends="set-splunk-home">
+		<antcall>
+			<target name="ivy-retrieve" />
+			<target name="copy-hunk-jars" />
+			<target name="create-jar" />
+		</antcall>
+	</target>
 
-    <target name="clean">
-	<delete dir="${basedir}/build"/>
-	<delete dir="${basedir}/lib"/>
-	<delete dir="${basedir}/classes"/>
-    </target>
+	<target name="clean">
+		<delete dir="${basedir}/build" />
+		<delete dir="${basedir}/lib" />
+		<delete dir="${basedir}/classes" />
+	</target>
 
 </project>
