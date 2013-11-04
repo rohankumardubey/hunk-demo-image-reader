@@ -1,0 +1,15 @@
+<ivysettings>
+  <settings defaultResolver="default"/>
+  <include url="${ivy.default.settings.dir}/ivysettings-public.xml"/>
+  <include url="${ivy.default.settings.dir}/ivysettings-shared.xml"/>
+  <include url="${ivy.default.settings.dir}/ivysettings-local.xml"/>
+  <include url="${ivy.default.settings.dir}/ivysettings-main-chain.xml"/>
+  <include url="${ivy.default.settings.dir}/ivysettings-default-chain.xml"/>
+  <resolvers>
+    <chain name="default" returnFirst="true">
+      <resolver ref="local"/>
+      <resolver ref="main"/>
+      <ibiblio name="clojars-org" root="http://clojars.org/repo" m2compatible="true"/>
+    </chain>
+  </resolvers>
+</ivysettings>
