@@ -25,20 +25,30 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileRecordReader;
 import org.apache.log4j.Logger;
 
-import com.splunk.hunk.input.ImageRecordReader.ImageEventProcessor;
 import com.splunk.hunk.input.image.HsbBucketProcessor;
 import com.splunk.mr.input.BaseSplunkRecordReader;
 import com.splunk.mr.input.VixInputSplit;
 
+/**
+ * Preprocesses images stored in a {@link SequenceFile}. The real processing of
+ * the image is all done by the @{link
+ * {@link SequenceImageRecordReader#imageProcessor} </br> This is an example of
+ * using an existing {@link RecordReader} to retrieve records that I can
+ * preprocess before returning them to the underlying framework.
+ */
 public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 
+	private static final String EXCEPTION = "exception";
 	private static final Logger gLogger = Logger
 			.getLogger(SequenceImageRecordReader.class);
+	// The RecordReader I didn't have to write
 	private SequenceFileRecordReader<Text, BytesWritable> recordReader;
 	private ImageEventProcessor imageProcessor;
 
@@ -46,46 +56,55 @@ public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 	public void vixInitialize(VixInputSplit split, TaskAttemptContext context)
 			throws IOException, InterruptedException {
 		recordReader = new SequenceFileRecordReader<Text, BytesWritable>();
-		gLogger.info("Init: " + split.getPath());
 		recordReader.initialize(split, context);
 		imageProcessor = new HsbBucketProcessor();
 	}
 
 	@Override
 	public Text getCurrentValue() throws IOException, InterruptedException {
-		BufferedImage image = getImageFromValue(recordReader.getCurrentValue());
-		String keyAsString = getKeyAsString();
-		gLogger.info("Key: " + keyAsString);
-		Map<String, Object> event;
-		if (image != null) {
-			try {
-				event = imageProcessor.createEventFromImage(image);
-			} catch (Exception e) {
-				event = new HashMap<String, Object>();
-				event.put("value", "image threw exception: "
-						+ e.getClass().getSimpleName());
-			}
-		} else {
-			event = new HashMap<String, Object>();
-			event.put("value", "image was null");
-		}
-		event.put("image", keyAsString);
+		BytesWritable imageBytes = recordReader.getCurrentValue();
+
+		Map<String, Object> event = createMap();
+		BufferedImage image = getImageFromValue(imageBytes);
+		if (image == null)
+			event.put(EXCEPTION, "Java libraries could not read image");
+		else
+			processImage(image, event);
+
 		return new Text(Utils.eventAsJson(event));
 	}
 
-	private String getKeyAsString() throws IOException, InterruptedException {
-		return recordReader.getCurrentKey().toString();
+	@SuppressWarnings("serial")
+	private Map<String, Object> createMap() throws IOException,
+			InterruptedException {
+		return new HashMap<String, Object>() {
+			{
+				put("image", getKeyAsString());
+			}
+		};
 	}
 
 	private BufferedImage getImageFromValue(BytesWritable bytes)
 			throws IOException, InterruptedException {
-		gLogger.info("bytes len: " + bytes.getLength());
 		try {
 			return ImageIO.read(inputStreamFromBytesWritable(bytes));
 		} catch (Exception e) {
 			gLogger.info("Got exception when reading image: " + e.getMessage());
 			return null;
 		}
+	}
+
+	private void processImage(BufferedImage image, Map<String, Object> event) {
+		try {
+			event.putAll(imageProcessor.createEventFromImage(image));
+		} catch (Exception e) {
+			event.put(EXCEPTION, "Processing image raised: "
+					+ e.getClass().getSimpleName());
+		}
+	}
+
+	private String getKeyAsString() throws IOException, InterruptedException {
+		return recordReader.getCurrentKey().toString();
 	}
 
 	private BoundedInputStream inputStreamFromBytesWritable(BytesWritable bytes) {
@@ -105,17 +124,26 @@ public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 
 	@Override
 	public Pattern getFilePattern() {
+		// the sequence file created by a MapFile is named data
 		return Pattern.compile("data$");
 	}
 
 	@Override
 	public Text getCurrentKey() throws IOException, InterruptedException {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(
+				"This should never be called by Hunk");
 	}
 
 	@Override
 	public String getOutputDataFormat() {
+		// Let's Splunk know in advance that we're outputting json.
 		return "json";
+	}
+
+	@Override
+	public float getProgress() throws IOException, InterruptedException {
+		// Get this for free when reusing this record reader!
+		return recordReader.getProgress();
 	}
 
 }

@@ -21,13 +21,13 @@ import java.util.regex.Pattern;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ImageRecordReaderTest {
+public class TgzImageRecordReaderTest {
 
-	private ImageRecordReader imageRecordReader;
+	private TgzImageRecordReader imageRecordReader;
 
 	@Before
 	public void setup() {
-		imageRecordReader = new ImageRecordReader();
+		imageRecordReader = new TgzImageRecordReader();
 	}
 
 	private void assertMatchesFile(String file) {

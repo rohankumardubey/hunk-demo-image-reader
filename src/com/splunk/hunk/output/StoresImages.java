@@ -33,6 +33,9 @@ import org.apache.hadoop.io.MapFile.Writer;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Text;
 
+/**
+ * Helper class for storing a directory that has images in a MapFile.
+ */
 public class StoresImages {
 
 	public final Class<Text> keyClass = Text.class;

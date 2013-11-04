@@ -36,18 +36,16 @@ import com.splunk.hunk.input.image.HsbBucketProcessor;
 import com.splunk.mr.input.BaseSplunkRecordReader;
 import com.splunk.mr.input.VixInputSplit;
 
-public class ImageRecordReader extends BaseSplunkRecordReader {
-
-	public interface ImageEventProcessor {
-
-		/**
-		 * @return key values with data from the image
-		 */
-		Map<String, Object> createEventFromImage(BufferedImage image);
-	}
+/**
+ * Preprocesses images stored in a tar. Class contains all the plumbing needed
+ * to read tar entries, send them to an {@link ImageEventProcessor} to create
+ * "image events", to at last return them through the
+ * {@link TgzImageRecordReader#getCurrentValue()}.
+ */
+public class TgzImageRecordReader extends BaseSplunkRecordReader {
 
 	private static final Logger logger = Logger
-			.getLogger(ImageRecordReader.class);
+			.getLogger(TgzImageRecordReader.class);
 
 	private final LinkedList<Map<String, Object>> eventQueue = new LinkedList<Map<String, Object>>();
 	private Text key = new Text();
@@ -131,13 +129,13 @@ public class ImageRecordReader extends BaseSplunkRecordReader {
 		value.set(Utils.eventAsJson(event));
 	}
 
-	// -- The end of the interesting stuff
-
 	@Override
 	public float getProgress() throws IOException, InterruptedException {
 		return new Double(Utils.getPercentage(tarIn.getBytesRead(),
 				totalBytesToRead)).floatValue();
 	}
+
+	// -- The end of the interesting stuff
 
 	@Override
 	public void close() throws IOException {

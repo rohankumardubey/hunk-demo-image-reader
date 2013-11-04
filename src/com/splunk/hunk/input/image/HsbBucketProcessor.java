@@ -22,7 +22,7 @@ import java.awt.image.DataBufferInt;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.splunk.hunk.input.ImageRecordReader.ImageEventProcessor;
+import com.splunk.hunk.input.ImageEventProcessor;
 import com.splunk.hunk.input.Utils;
 
 public class HsbBucketProcessor implements ImageEventProcessor {

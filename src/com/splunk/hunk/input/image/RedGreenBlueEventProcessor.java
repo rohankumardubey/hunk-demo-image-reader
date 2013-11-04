@@ -19,9 +19,12 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.splunk.hunk.input.ImageRecordReader.ImageEventProcessor;
+import com.splunk.hunk.input.ImageEventProcessor;
 import com.splunk.hunk.input.Utils;
 
+/**
+ * Output rgb percentages for an image.
+ */
 public class RedGreenBlueEventProcessor implements ImageEventProcessor {
 
 	@Override
