@@ -60,4 +60,10 @@
         </antcall>
     </target>
 
+    <target name="clean">
+	<delete dir="${basedir}/build"/>
+	<delete dir="${basedir}/lib"/>
+	<delete dir="${basedir}/classes"/>
+    </target>
+
 </project>
