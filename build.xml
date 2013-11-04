@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns:ivy="antlib:org.apache.ivy.ant" name="hunk-image-reader" basedir="." default="main" >
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="hunk-image-reader" basedir="." default="build" >
 
     <property name="ivy.install.version" value="2.3.0-rc2" />
     <property name="ivy.home" value="${user.home}/.ivy2" />
     <property name="ivy.jar.dir" value="${ivy.home}/lib" />
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+    <property environment="env" />
 
+    <target name="set-splunk-home">
+        <fail unless="env.SPLUNK_HOME" message="Set environment variable $SPLUNK_HOME to a path where Splunk is installed/extracted."/>
+        <property name="splunk.home" value="${env.SPLUNK_HOME}"/>
+    </target>
 
     <target name="download-ivy" depends="check-for-ivy-existance" unless="ivy-exists">
 
@@ -35,6 +40,24 @@
 
     <target name="ivy-retrieve" depends="init-ivy">
         <ivy:retrieve />
+    </target>
+
+    <target name="copy-hunk-jars">
+        <exec executable="${basedir}/copy-hunk-jars.sh">
+            <arg value="${splunk.home}"/>
+        </exec>
+    </target>
+
+    <target name="create-jar">
+        <exec executable="${basedir}/create-jar.sh"/>
+    </target>
+
+    <target name="build" depends="set-splunk-home">
+        <antcall>
+            <target name="ivy-retrieve"/>
+            <target name="copy-hunk-jars"/>
+            <target name="create-jar"/>
+        </antcall>
     </target>
 
 </project>
