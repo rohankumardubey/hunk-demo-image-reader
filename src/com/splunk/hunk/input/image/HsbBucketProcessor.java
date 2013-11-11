@@ -80,11 +80,15 @@ public class HsbBucketProcessor implements ImageEventProcessor {
 			BufferedImage image) {
 		int totalPixels = image.getWidth() * image.getHeight();
 		float[][][] pctBuckets = new float[b_buckets][s_buckets][h_buckets];
-		for (int i = 0; i < buckets.length; i++)
-			for (int j = 0; j < buckets[i].length; j++)
-				for (int k = 0; k < buckets[i][j].length; k++)
-					pctBuckets[i][j][k] = (float) Utils.getPercentage(
-							buckets[i][j][k], totalPixels);
+		for (int i = 0; i < buckets.length; i++) {
+			for (int j = 0; j < buckets[i].length; j++) {
+				for (int k = 0; k < buckets[i][j].length; k++) {
+					float f = (float) Utils.getPercentage(buckets[i][j][k],
+							totalPixels);
+					pctBuckets[i][j][k] = f > 0.0001f ? f : 0.0f;
+				}
+			}
+		}
 		return pctBuckets;
 	}
 
