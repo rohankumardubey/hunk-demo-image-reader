@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-script_dir=$(cd $(dirname $0) && pwd)
+script_dir=$(dirname $0)
 libs="$script_dir"/lib
 build="$script_dir"/build
 classes="$build"/classes

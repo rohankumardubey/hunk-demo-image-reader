@@ -19,17 +19,6 @@ com.splunk.hunk.input.SequenceImageRecordReader.class -> Hadoop MapFile
 
 The Hadoop mapfile can be created with com.splunk.hunk.output.StoresImages.class.
 
-## Hunk configuration
-1. Create a jar file with:
-  ./create-jar.sh <path-to-hunk-project>
-  where <path-to-hunk-project> could be /Users/petterik/perforce/si-staging/hadoop
-
-2. In indexes.conf:
-  vix.splunk.jars = <path-to-depo>/hunk-image-reader.jar
-  vix.splunk.search.recordreader = com.splunk.hunk.input.ImageRecordReader,com.splunk.hunk.input.SequenceImageRecordReader
-  vix.splunk.search.recordreader.image.regex = \.tgz$
-  vix.splunk.search.recordreader.seq-image-reader.regex = data$
-
 ## Build me!
 
 This project needs the Hunk jars to be built or developed on. Currently Hunk jars come with Splunk packages built for 64-bit *nix.
@@ -45,3 +34,13 @@ To build me, you can either set environment variable $SPLUNK_HOME to a Splunk in
 2. Extract a Splunk with Hunk jars and copy the jars from $SPLUNK_HOME/bin/jars to lib/
 3. Run the ./create-jar.sh or manually enter the commands that's in the script.
 4. You should now have a .jar somewhere
+
+## Hunk configuration
+1. Build the project first, with the descrptions above.
+
+2. Configure your virtual index either through the UI or indexes.conf with the following key values:
+  vix.splunk.jars = <path-to-repo>/build/hunk-image-reader.jar
+  vix.splunk.search.recordreader = com.splunk.hunk.input.ImageRecordReader,com.splunk.hunk.input.SequenceImageRecordReader
+  vix.splunk.search.recordreader.image.regex = \.tgz$
+  vix.splunk.search.recordreader.seq-image-reader.regex = data$
+
