@@ -13,8 +13,10 @@ for each image:
 The images can either be stored in a .tgz (tar gzip) or a hadoop MapFile.
 
 ## Readers:
-Reader.class -> format
+Syntax: Reader.class -> format
+
 com.splunk.hunk.input.ImageRecordReader.class -> .tgz
+
 com.splunk.hunk.input.SequenceImageRecordReader.class -> Hadoop MapFile
 
 The Hadoop mapfile can be created with com.splunk.hunk.output.StoresImages.class.
