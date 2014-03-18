@@ -31,6 +31,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileRecordReader;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import com.splunk.hunk.input.image.HsbBucketProcessor;
 import com.splunk.mr.input.BaseSplunkRecordReader;
@@ -51,6 +52,7 @@ public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 	// The RecordReader I didn't have to write
 	private SequenceFileRecordReader<Text, BytesWritable> recordReader;
 	private ImageEventProcessor imageProcessor;
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
 	public void vixInitialize(VixInputSplit split, TaskAttemptContext context)
@@ -62,6 +64,17 @@ public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 
 	@Override
 	public Text getCurrentValue() throws IOException, InterruptedException {
+		return new Text(objectMapper.writeValueAsString(getNextEvent()));
+	}
+
+	public void serializeCurrentValueTo(java.io.OutputStream out)
+			throws IOException, InterruptedException {
+		Map<String, Object> event = getNextEvent();
+		objectMapper.writeValue(out, event);
+	}
+
+	private Map<String, Object> getNextEvent() throws IOException,
+			InterruptedException {
 		BytesWritable imageBytes = recordReader.getCurrentValue();
 
 		Map<String, Object> event = createMap();
@@ -70,8 +83,7 @@ public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 			event.put(EXCEPTION, "Java libraries could not read image");
 		else
 			processImage(image, event);
-
-		return new Text(Utils.eventAsJson(event));
+		return event;
 	}
 
 	@SuppressWarnings("serial")

@@ -16,6 +16,7 @@ package com.splunk.hunk.input;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -31,6 +32,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import com.splunk.hunk.input.image.HsbBucketProcessor;
 import com.splunk.mr.input.BaseSplunkRecordReader;
@@ -49,9 +51,10 @@ public class TgzImageRecordReader extends BaseSplunkRecordReader {
 
 	private final LinkedList<Map<String, Object>> eventQueue = new LinkedList<Map<String, Object>>();
 	private Text key = new Text();
-	private Text value = new Text();
+	private Map<String, Object> value;
 	private TarArchiveInputStream tarIn;
 	private ImageEventProcessor imagePreProcessor;
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	private long totalBytesToRead;
 
@@ -74,7 +77,13 @@ public class TgzImageRecordReader extends BaseSplunkRecordReader {
 
 	@Override
 	public Text getCurrentValue() throws IOException, InterruptedException {
-		return value;
+		return new Text(objectMapper.writeValueAsString(value));
+	}
+
+	@Override
+	public void serializeCurrentValueTo(OutputStream out) throws IOException,
+			InterruptedException {
+		objectMapper.writeValue(out, value);
 	}
 
 	@Override
@@ -126,7 +135,7 @@ public class TgzImageRecordReader extends BaseSplunkRecordReader {
 	}
 
 	private void setNextValue(Map<String, Object> event) throws IOException {
-		value.set(Utils.eventAsJson(event));
+		value = event;
 	}
 
 	@Override
