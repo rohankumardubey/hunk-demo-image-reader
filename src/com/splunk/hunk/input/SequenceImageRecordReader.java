@@ -56,7 +56,7 @@ public class SequenceImageRecordReader extends BaseSplunkRecordReader {
 	public void vixInitialize(VixInputSplit split, TaskAttemptContext context)
 			throws IOException, InterruptedException {
 		recordReader = new SequenceFileRecordReader<Text, BytesWritable>();
-		recordReader.initialize(split, context);
+		recordReader.initialize(split.getSplit(), context);
 		imageProcessor = new HsbBucketProcessor();
 	}
 
